@@ -128,7 +128,7 @@ if st.session_state['data_ready_for_plot']:
 
     st.plotly_chart(fig)
 
-    image = fig.to_image(format='png', scale=3, engine='orca')
+    image = fig.to_image(format='png', scale=3)
     st.download_button(label='Download as png image', data=image, file_name='plot.png'
     , mime='image/png'
     )
