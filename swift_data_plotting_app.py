@@ -22,7 +22,7 @@ with st.sidebar:
     st.markdown('***')
 
 if 'app_initialized' not in st.session_state:
-    st.session_state['chart_type_dict'] = {'Lines + Scatter':'lines+markers', 'Lines':'lines', 'Scatter':'markers'}
+    st.session_state['chart_type_dict'] = {'Lines + Markers':'lines+markers', 'Lines':'lines', 'Markers':'markers'}
     st.session_state['data_ready_for_plot'] = False
     st.session_state['x_y_submitted'] = False
     st.session_state['y1'] = 'y1'
@@ -98,7 +98,7 @@ if st.session_state['app_initialized']:
     st.markdown('<p style="color:#4E4E4E; font-size: 20px;">You may type or just copy/paste from another table</p>', unsafe_allow_html=True)
     df_edited = st.data_editor(st.session_state['df'], num_rows='dynamic', key='df_edited', width=700, height=400)
     st.session_state['df_edited_as_object'] = df_edited
-    plot_type_selector = st.selectbox(label='**Select Plot Type**', options=['Lines + Scatter', 'Lines', 'Scatter'], key='plot_type_selector')
+    plot_type_selector = st.selectbox(label='**Select Plot Type**', options=['Lines + Markers', 'Lines', 'Markers'], key='plot_type_selector')
     chart_title = st.text_input('**Enter chart title (... or leave blank)**', key='chart_title')
     generate_plot_button = st.button('Generate Plot', on_click=data_ready)
 
