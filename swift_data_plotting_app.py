@@ -30,12 +30,12 @@ if 'app_initialized' not in st.session_state:
     st.session_state['y3'] = 'y3'
     st.session_state['y4'] = 'y4'
     st.session_state['y5'] = 'y5'
-    st.session_state['x_axis'] = 'x'
+    st.session_state['x'] = 'x'
     st.session_state['n_unique_vars'] = 6
     st.session_state['message'] = ''
 
-    col_list = [st.session_state['y1'], st.session_state['y2'], st.session_state['y3'], st.session_state['y4'], st.session_state['y5']]
-    st.session_state['df'] = pd.DataFrame(columns=col_list, index=pd.Index([], name=st.session_state['x_axis']))
+    col_list = [st.session_state['x'], st.session_state['y1'], st.session_state['y2'], st.session_state['y3'], st.session_state['y4'], st.session_state['y5']]
+    st.session_state['df'] = pd.DataFrame(columns=col_list, index=range(0, 10))
 
     st.session_state['app_initialized'] = True
 
@@ -47,9 +47,9 @@ def data_ready():
 
 def update_x_y():
     if st.session_state['x_input'] != '':
-        st.session_state['x_axis'] = st.session_state['x_input']
+        st.session_state['x'] = st.session_state['x_input']
     else:
-        st.session_state['x_axis'] = 'x'
+        st.session_state['x'] = 'x'
 
 
     if st.session_state['y1_input'] != '':
@@ -77,10 +77,8 @@ def update_x_y():
     else:
         st.session_state['y5'] = 'y5'
 
-    col_list = [st.session_state['y1'], st.session_state['y2'], st.session_state['y3'], st.session_state['y4'], st.session_state['y5']]
-    var_list = col_list.copy()
-    var_list.append(st.session_state['x_axis'])
-    unique_vars = set(var_list)
+    col_list = [st.session_state['x'], st.session_state['y1'], st.session_state['y2'], st.session_state['y3'], st.session_state['y4'], st.session_state['y5']]
+    unique_vars = set(col_list)
     n_unique_vars = len(unique_vars)
     st.session_state['n_unique_vars'] = n_unique_vars
 
@@ -88,10 +86,9 @@ def update_x_y():
         st.session_state['message'] = ''
         modified_df = st.session_state['df_edited_as_object']
         modified_df.columns = col_list
-        modified_df.index.name = st.session_state['x_axis']
         st.session_state['df'] = modified_df
     else:
-        st.session_state['message'] = 'sorry, variable names must be unique :warning:'
+        st.session_state['message'] = ':warning: Variable names must be unique'
 
 if st.session_state['app_initialized']:
     st.subheader('Add data to the table')
@@ -111,20 +108,22 @@ if st.session_state['data_ready_for_plot']:
 
     st.session_state['active_cols'] = []
 
-    for index, column in enumerate(df_edited.columns):
-        if df_edited[column].notnull().any():
+    df_plot = df_edited.dropna(axis=0, how='all')
+
+    for index, column in enumerate(df_plot.columns[1:]):
+        if df_plot[column].notnull().any():
             st.session_state['active_cols'].append(index)
             fig.add_trace(
-                go.Scatter(x=df_edited.index, y=df_edited[column], mode=chart_mode, name=column, line_color=px.colors.qualitative.Plotly[index]))
+                go.Scatter(x=df_plot.iloc[:, 0], y=df_plot[column], mode=chart_mode, name=column, line_color=px.colors.qualitative.Plotly[index]))
     fig.update_layout(
         title_text=title,
     )
 
-    fig.update_xaxes(title_text=st.session_state['x_axis'])
-
+    fig.update_xaxes(title_text=st.session_state['x'])
     if len(st.session_state['active_cols']) == 1:
         index_active_col = st.session_state['active_cols'][0]
-        fig.update_yaxes(title_text=st.session_state[f'y{index_active_col+1}'])
+        active_col_name = df_plot.columns[index_active_col+1]
+        fig.update_yaxes(title_text=active_col_name)
 
     st.plotly_chart(fig)
 
@@ -146,7 +145,8 @@ if st.session_state['data_ready_for_plot']:
 
     with st.sidebar:
         st.write('**You may specify custom x and y-variable names**')
-        st.session_state['message']
+        if st.session_state['message'] !='':
+            st.error(st.session_state['message'])
         x_input = st.text_input('**x**', key='x_input', on_change=update_x_y)
         y1_input = st.text_input('**y1**', key='y1_input', on_change=update_x_y)
         y2_input = st.text_input('**y2**', key='y2_input', on_change=update_x_y)
